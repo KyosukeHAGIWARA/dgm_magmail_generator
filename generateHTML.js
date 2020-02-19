@@ -1,4 +1,4 @@
-var color_code = {
+var colorCode = {
   '連載': '#c02929',
   '特集': '#0099fa',
   '製品レビュー': '#50af17',
@@ -9,12 +9,12 @@ var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('メルマガ�
 
 
 // main
-function main(){
+function main() {
   const folder = DriveApp.getRootFolder();
   const contents = {
-    delivary_date: Utilities.formatDate( sheet.getRange('K6').getValue(),"JST","yyyy/MM/dd"),
-    article_item: getWeeklyData(),
-    banner_item: getBannerData()    
+    delivaryDate: Utilities.formatDate(sheet.getRange('K6').getValue(), "JST", "yyyy/MM/dd"),
+    articleItem: getWeeklyData(),
+    bannerItem: getBannerData()
   };
   Logger.log(contents);
   return createHtmlTemplate(folder, contents);
@@ -24,14 +24,14 @@ function main(){
 
 function createHtmlTemplate(folder, contents) {
   Logger.log('メルマガ内容を埋め込むHTMLファイルを作成して、Google ドライブに保存する');
-  
+
   //  過去に生成したファイルがあれば消す
   var f = folder.getFilesByName('gen_mail_magazine.html');
-  while(f.hasNext()){
+  while (f.hasNext()) {
     var fil = f.next();
-      folder.removeFile(fil);
+    folder.removeFile(fil);
   }
-  
+
   //  htmlファイルをドライブのルートに生成
   const file = folder.createFile('gen_mail_magazine.html', generateHtml(contents), MimeType.HTML);
   return file;
@@ -48,37 +48,37 @@ function generateHtml(contents) {
 
 // メルマガのコンテンツをスプレッドシートから読み込む
 function getWeeklyData() {
-  
-  const key = Utilities.formatDate( sheet.getRange('K6').getValue(),"JST","yyyy/MM/dd");
+
+  const key = Utilities.formatDate(sheet.getRange('K6').getValue(), "JST", "yyyy/MM/dd");
   const col = 'A';
   var data = sheet.getRange('A7:A1000').getValues();
 
-  var article_item = [];
+  var articleItem = [];
 
-  for(var ind=0; ind<data.length; ind++){
+  for (var ind = 0; ind < data.length; ind++) {
     //配信予定日の分だけ抜き出す
-    if (data[ind][0] != '' && Utilities.formatDate( data[ind][0],"JST","yyyy/MM/dd") == key){
-      var row_item = sheet.getRange(ind+7, 1, 1, 8).getValues();
-      
+    if (data[ind][0] != '' && Utilities.formatDate(data[ind][0], "JST", "yyyy/MM/dd") == key) {
+      var rowItem = sheet.getRange(ind + 7, 1, 1, 8).getValues();
+
       // 記事タイプが規定以外だとエラーで止まる
-      if (!color_code[row_item[0][6]]) {
-        Browser.msgBox(Utilities.formatString("%s行目 : \" %s \" は規定されていないコーナー名です。",ind+7, row_item[0][6]));
+      if (!colorCode[rowItem[0][6]]) {
+        Browser.msgBox(Utilities.formatString("%s行目 : \" %s \" は規定されていないコーナー名です。", ind + 7, rowItem[0][6]));
         throw new Error("コーナー名を修正してください");
       }
-      
+
       // 記事データを格納
-      article_item.push({ 
-          article_type: row_item[0][6],
-          article_type_color: color_code[row_item[0][6]],
-          article_img: row_item[0][5],
-          article_title: row_item[0][3],
-          article_url: row_item[0][4]
+      articleItem.push({
+        articleType: rowItem[0][6],
+        articleTypeColor: colorCode[rowItem[0][6]],
+        articleImg: rowItem[0][5],
+        articleTitle: rowItem[0][3],
+        articleUrl: rowItem[0][4]
       });
     }
   }
-  
-  Logger.log(article_item);
-  return article_item;
+
+  Logger.log(articleItem);
+  return articleItem;
 }
 
 
@@ -86,24 +86,22 @@ function getWeeklyData() {
 function getBannerData() {
   var data = sheet.getRange(3, 14, 4, 6).getValues();
 
-  var banner_item = [];
-  for(var ind=0; ind<data.length; ind++){
-    if (data[ind][0] != ''){
-      var row_item = data[ind];
+  var bannerItem = [];
+  for (var ind = 0; ind < data.length; ind++) {
+    if (data[ind][0] != '') {
+      var rowItem = data[ind];
 
-      banner_item.push({ 
-          banner1_url: row_item[0],
-          banner1_img: row_item[1],
-          banner1_alt: row_item[2],
-          banner2_url: row_item[3],
-          banner2_img: row_item[4],
-          banner2_alt: row_item[5]
+      bannerItem.push({
+        banner1Url: rowItem[0],
+        banner1Img: rowItem[1],
+        banner1Alt: rowItem[2],
+        banner2Url: rowItem[3],
+        banner2Img: rowItem[4],
+        banner2Alt: rowItem[5]
       });
     }
   }
-  
-  Logger.log(banner_item);
-  return banner_item;
+
+  Logger.log(bannerItem);
+  return bannerItem;
 }
-
-
